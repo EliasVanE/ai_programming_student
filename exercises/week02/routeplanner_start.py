@@ -42,7 +42,7 @@ class RouteAgent:
 
     def utility(self, from_city: str, to_city: str) -> float:
         """TODO: geef -d(from_city, to_city) terug."""
-        return 0.0
+        return -d(from_city,to_city)
 
     def neighbours(self, city: str) -> list[str]:
         """TODO: geef alle steden met een directe weg naar `city`."""
@@ -52,6 +52,8 @@ class RouteAgent:
         """TODO: kies onder de niet-bezochte buren de buur met de
         hoogste utility. Geen buren meer? -> None.
         """
+        for city in ROADS:
+            if city not in visited:
         return None
 
     def plan_route(self, start_city: str, goal_city: str) -> list[str]:
