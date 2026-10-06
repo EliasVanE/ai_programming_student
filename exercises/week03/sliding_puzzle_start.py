@@ -4,7 +4,7 @@ Oefening 2: Sliding Puzzle (8-puzzle)
 Implementeer de sliding puzzle en los hem op met BFS/DFS.
 """
 import numpy as np
-
+from collections import deque
 
 class SlidingPuzzle:
     GRIDSIZE = 3
@@ -21,7 +21,24 @@ class SlidingPuzzle:
 
     def possible_new_configurations(self):
         # TODO: geef alle nieuwe configuraties door het lege vakje te verschuiven
-        return []
+        moves = [
+        [-1, 0],  #naar omhoog
+        [1, 0],   #naar omlaag
+        [0, -1],  #naar links
+        [0, 1 ]   #naar rechts
+        ]
+        lijst_puzzels = []
+        rij, kol = self.locate_empty()
+        for delta_r,delta_k in moves:
+            new_rij = rij + delta_r
+            new_kol = kol + delta_k
+            if 0 <= new_rij < 3 and 0 <= new_kol < 3:
+                new_puzzle = self.duplicate()
+                new_puzzle.Game[rij][kol] = new_puzzle.Game[new_rij][new_kol]
+                new_puzzle.Game[new_rij][new_kol] = self.Game[rij][kol]   
+                lijst_puzzels.append(new_puzzle)
+
+        return lijst_puzzels
 
     def locate_empty(self):
         for row in range(self.GRIDSIZE):
@@ -49,7 +66,25 @@ class SlidingPuzzle:
 
 def solve_puzzle(start_puzzle):
     # TODO: los de puzzel op met BFS
-    pass
+    queue = deque([start_puzzle])
+    visited = set()
+
+    while queue:
+        puzzle = queue.popleft()
+        if puzzle.is_goal():
+            return puzzle
+        
+        config = str(puzzle.Game)
+        if config in visited:
+            continue
+
+        visited.add(config)
+        new_configurations = puzzle.possible_new_configurations()
+        for new_puzzle in new_configurations:
+            queue.append(new_puzzle)
+    return None
+
+
 
 
 if __name__ == "__main__":
@@ -61,6 +96,10 @@ if __name__ == "__main__":
     puzzle = SlidingPuzzle(game)
     print("Startconfiguratie:")
     puzzle.log()
+    mogelijk = SlidingPuzzle.possible_new_configurations(puzzle)
+    for p in mogelijk:
+        p.log()
 
-    # oplossing = solve_puzzle(puzzle)
-    # print("Oplossing:", oplossing)
+    oplossing = solve_puzzle(puzzle)
+    print("Oplossing:")
+    oplossing.log()
