@@ -1,22 +1,21 @@
-"""
-Oefening 2: Foute sensor — Boeing 737 MAX (Model-based Reflex Agent)
-=====================================================================
-Een vliegtuig heeft twee hoogtemeters (redundantie). Eén sensor kan
-stukgaan en onzin meten (denk aan de AoA-sensor van de Boeing 737 MAX).
+# Oefening 2: Foute sensor — Boeing 737 MAX (Model-based Reflex Agent)
+# =====================================================================
+# Een vliegtuig heeft twee hoogtemeters (redundantie). Eén sensor kan
+# stukgaan en onzin meten (denk aan de AoA-sensor van de Boeing 737 MAX).
 
-De agent moet:
-1. Beide sensoren lezen (sensors).
-2. Beoordelen of ze het met elkaar eens zijn (plausibiliteitscheck).
-3. Bij discrepantie vertrouwen op de sensor die consistent is met de
-   vorige waarde (sensor model + interne state).
-4. Als de betrouwbare hoogtemeter daalt: een correctie aanvragen
-   (actuator).
-"""
-# Onderdeel	Beschrijving
-# Performance	De agent moet beide sensoren goed in de gaten houden en beoordelen of ze correct zijn
-# Environment	tijdens het opstijgen, tijdens het landen en tijdens het vliegen
-# Actuators	 meten, beoordelen
-# Sensors	hoogte meten
+# De agent moet:
+# 1. Beide sensoren lezen (sensors).
+# 2. Beoordelen of ze het met elkaar eens zijn (plausibiliteitscheck).
+# 3. Bij discrepantie vertrouwen op de sensor die consistent is met de
+#    vorige waarde (sensor model + interne state).
+# 4. Als de betrouwbare hoogtemeter daalt: een correctie aanvragen
+#    (actuator).
+# """
+# Onderdeel     Beschrijving
+# Performance   De agent moet beide sensoren goed in de gaten houden en beoordelen of ze correct zijn
+# Environment   tijdens het opstijgen, tijdens het landen en tijdens het vliegen
+# Actuators      meten, beoordelen
+# Sensors       hoogte meten
 from typing import Optional
 
 
@@ -51,12 +50,14 @@ class FaultTolerantAgent:
 
     def __init__(self):
         # TODO: interne state — welke variabelen heb je nodig?
-        pass
+        self.vorige_waarde = None
+        
+
 
     def read_all(self, p: Reading) -> tuple[float, float]:
         """Sensors: geef beide metingen terug."""
         # TODO
-        pass
+        return p.sensor_a,p.sensor_b
 
     def reliable_value(self, a: float, b: float, previous: Optional[float]) -> float:
         """Sensor model: bepaal de meest betrouwbare hoogtemeting.
@@ -68,14 +69,38 @@ class FaultTolerantAgent:
         - Is er geen vorige waarde (eerste meetslag)? -> kies
           bij voorkeur sensor a.
         """
-        # TODO: implementeer dit 
+        # TODO: implementeer dit
+        if previous is None:
+            self.betrouwbaar = a
+            return self.betrouwbaar
+        verschil =  abs(a - b)
+        if verschil <= self.TOLERANCE:
+            return ((a + b)/2)
+        else:
+            if (abs(a - previous)) < (abs(b-previous)):
+                self.betrouwbaar = a
+                return  self.betrouwbaar
+            else:
+                self.betrouwbaar = b
+                return self.betrouwbaar
 
     def process(self, p: Reading):
         # TODO: kies de betrouwbare meting, bepaal de trend (delta t.o.v.
         #       de vorige waarde) en vraag correctie aan als de daling
         #       sneller is dan DESCENT_LIMIT. Vergeet de interne state
         #       niet bij te werken.
-        return Nothing()
+        a, b = self.read_all(p)
+        betrouwbare_waarde = self.reliable_value(a, b, self.vorige_waarde)
+        if self.vorige_waarde is None:
+            self.vorige_waarde = betrouwbare_waarde
+            return Nothing()
+        trend = betrouwbare_waarde- self.vorige_waarde
+        if trend < self.DESCENT_LIMIT:
+            self.vorige_waarde = betrouwbare_waarde
+            return Correct()
+        else:
+            self.vorige_waarde = betrouwbare_waarde
+            return Nothing()
 
 
 if __name__ == "__main__":
