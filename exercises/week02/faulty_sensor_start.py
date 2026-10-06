@@ -51,14 +51,12 @@ class FaultTolerantAgent:
 
     def __init__(self):
         # TODO: interne state — welke variabelen heb je nodig?
-        self.vorige_waarde = None
-        
-
+        pass
 
     def read_all(self, p: Reading) -> tuple[float, float]:
         """Sensors: geef beide metingen terug."""
         # TODO
-        return p.sensor_a,p.sensor_b
+        pass
 
     def reliable_value(self, a: float, b: float, previous: Optional[float]) -> float:
         """Sensor model: bepaal de meest betrouwbare hoogtemeting.
@@ -70,38 +68,14 @@ class FaultTolerantAgent:
         - Is er geen vorige waarde (eerste meetslag)? -> kies
           bij voorkeur sensor a.
         """
-        # TODO: implementeer dit
-        if previous is None:
-            self.betrouwbaar = a
-            return self.betrouwbaar
-        verschil =  abs(a - b)
-        if verschil <= self.TOLERANCE:
-            return ((a + b)/2)
-        else:
-            if (abs(a - previous)) < (abs(b-previous)):
-                self.betrouwbaar = a
-                return  self.betrouwbaar
-            else:
-                self.betrouwbaar = b
-                return self.betrouwbaar
+        # TODO: implementeer dit 
 
     def process(self, p: Reading):
         # TODO: kies de betrouwbare meting, bepaal de trend (delta t.o.v.
         #       de vorige waarde) en vraag correctie aan als de daling
         #       sneller is dan DESCENT_LIMIT. Vergeet de interne state
         #       niet bij te werken.
-        a, b = self.read_all(p)
-        betrouwbare_waarde = self.reliable_value(a, b, self.vorige_waarde)
-        if self.vorige_waarde is None:
-            self.vorige_waarde = betrouwbare_waarde
-            return Nothing()
-        trend = betrouwbare_waarde- self.vorige_waarde
-        if trend < self.DESCENT_LIMIT:
-            self.vorige_waarde = betrouwbare_waarde
-            return Correct()
-        else:
-            self.vorige_waarde = betrouwbare_waarde
-            return Nothing()
+        return Nothing()
 
 
 if __name__ == "__main__":
