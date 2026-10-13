@@ -20,11 +20,37 @@ class Maze:
 
     def valid_moves(self, current):
         # TODO: geef lijst van (rij,kolom)-coördinaten die geldig zijn
-        pass
+        moves = [
+            [-1, 0],  #naar omhoog
+            [1, 0],   #naar omlaag
+            [0, -1],  #naar links
+            [0, 1 ]   #naar rechts
+       ]
+        geldige_moves = []
+        rij,kolom = current
+        for delta_r, delta_k in moves:
+            new_rij = rij + delta_r
+            new_kolom = kolom + delta_k
+            if (0 <= new_rij < self.size[0] and
+            0 <= new_kolom < self.size[1] and
+            self.maze[new_rij, new_kolom] != '#'):
+                geldige_moves.append((new_rij, new_kolom))
+                
+        return geldige_moves
+
 
     def extract_path(self, stack):
         # TODO: haal het pad uit de stack van start tot end
-        pass
+        pad = []
+        while stack:
+            current = stack.pop()
+            pad.append(current)
+            if current == self.end:
+                break
+            
+
+
+        return pad
 
     def print_maze(self):
         for row in self.maze:
@@ -33,7 +59,29 @@ class Maze:
 
 def find_path(maze):
     # TODO: implementeer DFS met een stack
-    pass
+    stack = [maze.start]
+    parent = {maze.start: None}
+    visited = {maze.start}
+
+    while stack:
+        current = stack.pop()
+        if current == maze.end:
+            pad = []
+            stap = current
+            while stap is not None:
+                pad.append(stap)
+                stap = parent[stap]
+            pad.reverse()
+            return (pad,len(pad)-1)
+        for buur in maze.valid_moves(current):
+            if buur not in visited:
+                visited.add(buur)
+                parent[buur] = current # dit is backtracking
+                stack.append(buur)
+    return (None,0)
+
+
+
 
 
 if __name__ == "__main__":

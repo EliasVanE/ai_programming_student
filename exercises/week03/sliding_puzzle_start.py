@@ -49,7 +49,9 @@ class SlidingPuzzle:
 
     def manhattan_distance(self):
         # TODO: bereken de Manhattan-afstand tot de goal-configuratie
-        return 0
+        row_goal,col_goal = 2,2
+        row_cur,col_cur = self.locate_empty()
+        return abs(row_goal - row_cur) + abs(col_goal - col_cur)
 
     def is_goal(self):
         return np.array_equal(self.Game, self.GOAL)
