@@ -8,7 +8,6 @@ Oefening 4: Dijkstra
 """
 import heapq
 from collections import deque
-
 import numpy as np
 
 
