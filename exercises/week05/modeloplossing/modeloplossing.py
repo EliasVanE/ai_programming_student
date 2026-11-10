@@ -136,6 +136,7 @@ class WordPuzzle:
 
         for _ in range(self.num_generations):
             populatie.sort(key=self.calculate_fitness, reverse=True)
+
             if self.calculate_fitness(populatie[0]) > beste_fitness:
                 beste_zin = populatie[0]
                 beste_fitness = self.calculate_fitness(beste_zin)
@@ -287,3 +288,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+

@@ -17,76 +17,77 @@ class WordPuzzle:
     def generate_phrase(self, length):
         zin = ""
         for _ in range(length):
-            zin += "".join(random.choice(string.ascii_letters))
+            zin += random.choice(string.ascii_letters + " ")
         return zin
 
     def calculate_fitness(self, phrase):
         score = 0
-        for i in range(len(phrase) ):
-            if phrase[i] == self.target_phrase[i]:
+        for i in range(len(phrase)):
+            if self.target_phrase[i] == phrase[i]:
                 score += 1
-        return score
+        return score / len(phrase)
 
     def generate_population(self, size, phrase_length):
         zinnen = []
-        for i in  range(1,size+1):
+        for i in range(size):
             zin = self.generate_phrase(phrase_length)
             zinnen.append(zin)
         return zinnen
 
     def crossover(self, phrase1, phrase2):
-        split = random.randint(0, len(phrase1))
-        child = phrase1[:split] + phrase2[split:]
-        return child
+        knippunt = random.randint(1,len(phrase1) -1)
+        nieuwe_zin = phrase1[:knippunt] + phrase2[knippunt:]
+        return nieuwe_zin
 
     def mutate(self, phrase, rate):
-        result = ""
-
-        for char in phrase:
-            if random.random() < rate:
-                result += random.choice(string.printable)
+        rate= self.mutation_rate
+        nieuwe_zin = ""
+        for i in range(len(phrase)):
+            kans  = random.random()
+            if kans < rate:
+               nieuwe_zin += random.choice(string.ascii_letters + " ")
             else:
-                result += char
-
-        return result
+                nieuwe_zin += phrase[i]
+        return nieuwe_zin
 
     def select_best(self, population):
-        population.sort(key=self.calculate_fitness,reverse=True)
-        return population[0]
+        score = 0
+        beste_zin = ""
+        for zin in population:
+            fitness = self.calculate_fitness(zin)
+            if score < fitness:
+                beste_zin = zin
+                score = fitness
+        return beste_zin
     def genetic_algorithm(self):
-        population = self.generate_population(
-            self.population_size, len(self.target_phrase))
-        for generation in range(self.num_generations):
-            population.sort(key=self.calculate_fitness, reverse=True)
-            best_phrase = population[0]
+        lengte  = len(self.target_phrase)
+        populatie = self.generate_population(self.population_size, lengte)
+        beste_zin = self.select_best(populatie)
+        beste_fitness = self.calculate_fitness(beste_zin)
 
-            if generation % 100 == 0:
-                print(
-                f"Generatie {generation}: {best_phrase} "
-                f"(fitness: {self.calculate_fitness(best_phrase)})"
-            )
+        for _ in range(self.num_generations):
+            populatie.sort(key=self.calculate_fitness, reverse=True)
+            
+            if self.calculate_fitness(populatie[0]) > beste_fitness:
+                beste_zin = populatie[0]
+                beste_fitness = self.calculate_fitness(beste_zin)
+                if beste_fitness == 1.0:
+                    break
+            aantal_ouders = max(2, self.population_size // 2)
+            ouders = populatie[:aantal_ouders]
+            volgende: list[str] = []
+            while len(volgende) < self.population_size:
+                p1, p2 = random.sample(ouders, 2)
+                kind = self.crossover(p1, p2)
+                kind = self.mutate(kind, self.mutation_rate)
+                volgende.append(kind)
+            if _ % 100 == 0:
+                print(f"Generatie {_}: {beste_zin} ({beste_fitness:.2%})")
+            populatie = volgende
+        print(f"Opgelost in generatie {_}: {beste_zin} ({beste_fitness:.2%})")
+        return beste_zin
 
-            if best_phrase == self.target_phrase:
-                print(f"Doelzin bereikt in generatie {generation}: {best_phrase}")
-                return best_phrase
-
-            new_population = [best_phrase]
-
-            helft = population[:len(population) // 2]
-
-            while len(new_population) < self.population_size:
-                parent1 = random.choice(helft)
-                parent2 = random.choice(helft)
-
-                child = self.crossover(parent1, parent2)
-                child = self.mutate(child, self.mutation_rate)
-
-                new_population.append(child)
-
-            population = new_population
-
-        population.sort(key=self.calculate_fitness, reverse=True)
-        return population[0]    
+          
             
 
 
