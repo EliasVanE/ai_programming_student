@@ -34,7 +34,7 @@ class Othello:
             c += dc
             if not (0 <= r < 8) or not (0 <= c < 8):
                 continue
-            if self.board[r][c] == self.opponent():
+            if self.board[r][c] == self.andere():
                 r += dr
                 c += dc
                 while (0 <= r < 8) and (0 <= c < 8):
@@ -46,11 +46,11 @@ class Othello:
                     c += dc
         return False
 
-    def opponent(self):
+    def andere(self):
         return "O" if self.player == "X" else "X"
 
     def change_player(self):
-        self.player = self.opponent()
+        self.player = self.andere()
 
     def make_move(self, row, col, player):
         if self.is_valid_move(row, col, player):
@@ -83,19 +83,92 @@ class Othello:
 
     def random_move(self):
         # TODO: kies een geldige zet
-        pass
+        moves = self.valid_moves(self.player)
+        if moves:
+            return random.choice(moves)
+        return "Geen Geldige moves"
 
     def evaluate(self, player):
         # TODO: evaluatiefunctie (bijv. stukken + mobiliteit)
-        pass
+        andere = "O" if player == "X" else "X"
+        weights = [
+            [100, -20, 10,  5,  5, 10, -20, 100],
+            [-20, -50, -2, -2, -2, -2, -50, -20],
+            [ 10,  -2, -1, -1, -1, -1,  -2,  10],
+            [  5,  -2, -1, -1, -1, -1,  -2,   5],
+            [  5,  -2, -1, -1, -1, -1,  -2,   5],
+            [ 10,  -2, -1, -1, -1, -1,  -2,  10],
+            [-20, -50, -2, -2, -2, -2, -50, -20],
+            [100, -20, 10,  5,  5, 10, -20, 100]
+        ]
+
+        positional_score = 0
+        for r in range(8):
+            for c in range(8):
+                if self.board[r][c] == player:
+                    positional_score += weights[r][c]
+                elif self.board[r][c] == andere:
+                    positional_score -= weights[r][c]
+
+        my_moves = len(self.valid_moves(player))
+        opp_moves = len(self.valid_moves(andere))
+        mobility_score = (my_moves - opp_moves) * 5
+
+        x_count, o_count = self.count_pieces()
+        piece_diff = (x_count - o_count) if player == "X" else (o_count - x_count)
+
+        return positional_score + mobility_score + piece_diff
+    def copy(self):
+        new_board = []
+        for r in range(8):
+            rij = []
+            for c in range(8):
+                rij.append(self.board[r][c])
+            new_board.append(rij)
+        return new_board
 
     def minimax(self, depth, is_maximizing, player):
         # TODO: implementeer minimax (simuleer zetten op een kopie)
-        pass
+        current_player = self.player if is_maximizing else player
+        moves = self.valid_moves(current_player)
+        if depth == 0 or len(moves) == 0:
+            return self.evaluate(self.player)
+        if is_maximizing:
+            best = -float("inf")
+            for zet in self.valid_moves(current_player):
+                x,y = zet
+                new_board = self.copy()
+                new_board[x][y] = "X"
+                score = self.minimax( depth - 1, False,new_board)
+                best = max(best,score)
+            return best
+        else:
+            best = float('inf')
+            for zet in self.valid_moves(current_player):
+                x,y = zet
+                new_board = self.copy()
+                new_board[x][y] = "O"
+                score = self.minimax( depth - 1,True,new_board)
+                best = min(best, score)
+            return best
 
     def best_move(self, depth=3):
         # TODO: kies de beste zet via minimax
-        pass
+        best_score = -float('inf')
+        best_move = None
+        opponent = 'O' if self.player == 'X' else 'X'
+
+        for zet in self.valid_moves(self.player):
+            kopie = self.copy()
+            x, y = zet
+            kopie.board[x][y] = self.player
+
+            score = kopie.minimax(depth - 1, False, opponent)
+            if score > best_score:
+                best_score = score
+                best_move = zet
+
+        return best_move
 
 
 def play():
